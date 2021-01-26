@@ -10,7 +10,7 @@ body, html {
     bottom: 0px;
     transform: translate(-50%, 0%);
     margin: 0 auto;
-    width: 800px;
+    width: 650px;
     max-width: 92%;
 }
 
@@ -21,11 +21,11 @@ body, html {
 }
 
 #cat.close {
-    content: url(/images/cat_close.png);
+    content: url(./images/cat_close.png);
 }
 
 #cat.open {
-    content: url(/images/cat_open.png);
+    content: url(./images/cat_open.png);
     width: 80%;
 }
 
@@ -40,10 +40,10 @@ body, html {
     position: fixed;
     top: 10px;
     left: 10px;
-    width: 500px;
+    width: 400px;
     max-width: 80%;
     background-color: rgb(255,255,255,0.5);
-    font-size: 25px;
+    font-size: 18px;
 }
 
 .optionWrapper {
@@ -76,5 +76,5 @@ body, html {
 
 
 .checkbox {
-    transform: scale(2);
+    transform: scale(1.3);
 }
