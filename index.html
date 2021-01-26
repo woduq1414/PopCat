@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link href="./style.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"
+        integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
+    <title>
+        PopCat
+    </title>
+    <link rel="shortcut icon" href="#" />
+</head>
+
+<body>
+    <audio id='pop_sound' src="/sounds/pop.mp3"></audio>
+    <div id="catWrapper">
+        <img id="cat" class="close">
+    </div>
+
+    <!-- <div id="volume">
+
+    </div> -->
+
+    <div id="optionContainer">
+        <span id="popCountLabel">popCount : 0</span>
+        <div class="optionWrapper">
+            <span class="optionLabel" id="thresholdVolumeLabel">sensitivity : 80</span>
+            <input id="thresholdVolumeRange" type="range" min="1" max="100" value="80" step="1" class="range blue">
+        </div>
+
+        <div class="optionWrapper">
+            <span class="optionLabel" id="popDelayLabel">popDelay : 150</span>
+            <input id="popDelayRange" type="range" min="10" max="500" value="150" step="10" class="range blue">
+        </div>
+
+        <div class="optionWrapper">
+            <span class="optionLabel" id="popDelayLabel">popSound : </span>
+            <input id="popSoundCheck" type="checkbox" class="checkbox" checked>
+        </div>
+    </div>
+
+
+    <script>
+
+        let popSoundChecked = true;
+        let popCount = 0;
+        let isOpened = false;
+        let $cat = $("#cat");
+        let $popCountLabel = $("#popCountLabel");
+        let pop_audio = document.getElementById("pop_sound");
+
+        let popDelay = 100;
+        let thresholdVolume = 5;
+
+        let openedTime = new Date();
+
+
+        $("#catWrapper").on("click", function () {
+            open();
+        })
+
+
+        $("#popDelayRange").on("change", function () {
+            $("#popDelayLabel").html(`popDelay : ${$(this).val()}`);
+            popDelay = $(this).val();
+        })
+
+
+        $("#thresholdVolumeRange").on("change", function () {
+            $("#thresholdVolumeLabel").html(`sensitivity : ${$(this).val()}`);
+            thresholdVolume= 3 + (100 - $(this).val()) * 0.2;
+          
+        })
+
+        $("#popSoundCheck").on("change", function () {
+            popSoundChecked = $(this).is(":checked");
+        })
+
+
+        
+
+        function open() {
+     
+            if (popSoundChecked) {
+
+                pop_audio.play();
+            }
+
+            isOpened = true;
+            $cat.removeClass("close");
+            $cat.addClass("open");
+
+            popCount += 1;
+            $popCountLabel.text(`popCount : ${popCount}`);
+            // isOpened = true;
+            setTimeout(close, popDelay);
+        }
+
+        function close() {
+
+            $cat.removeClass("open");
+            $cat.addClass("close");
+
+
+            setTimeout(() => { isOpened = false; }, popDelay);
+        }
+
+
+        function flip() {
+            $cat.toggleClass("flip");
+        }
+
+
+        function updateMeter(pct) {
+
+            // console.log(pct);
+
+            if (pct >= thresholdVolume) {
+                if (isOpened != true) {
+                    let newOpenedTime = new Date();
+                    if (newOpenedTime - openedTime >= 1000) {
+                        flip();
+                    }
+                    openedTime = newOpenedTime;
+
+                    open();
+
+                }
+
+
+            }
+
+        }
+
+        window.onload = function () {
+            window.AudioContext = (window.AudioContext ||
+                window.webkitAudioContext);
+            navigator.getUserMedia = (navigator.getUserMedia ||
+                navigator.webkitGetUserMedia ||
+                navigator.mozGetUserMedia);
+            navigator.getUserMedia({
+                video: false,
+                audio: true
+            }, function (stream) {
+                var audioContext = new AudioContext();
+                var mediaStreamSource = audioContext.createMediaStreamSource(stream);
+                var processor = audioContext.createScriptProcessor(2048, 1, 1);
+
+                // mediaStreamSource.connect(audioContext.destination);
+                mediaStreamSource.connect(processor);
+                processor.connect(audioContext.destination);
+
+                processor.onaudioprocess = function (e) {
+                    var inputData = e.inputBuffer.getChannelData(0);
+                    var inputDataLength = inputData.length;
+                    var total = 0;
+
+                    for (var i = 0; i < inputDataLength; i++) {
+                        total += Math.abs(inputData[i++]);
+                    }
+
+                    var rms = Math.sqrt(total / inputDataLength);
+                    updateMeter(rms * 100);
+                };
+            }, function (err) {
+
+            });
+        }
+    </script>
+</body>
+
+</html>
